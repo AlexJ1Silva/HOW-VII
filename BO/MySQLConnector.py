@@ -53,14 +53,15 @@ try:
         @app.route('/somaPagamentosPorImovel', methods=['GET'])
         def somaPagamentosPorImovel():
             resultado = {}
+
             for venda in vendas:
                 codigoImovel = venda['CodigoImovel']
                 valorPagamento = venda['ValorPagamento']
-                valorPagamentoFormatado = f"R$ {valorPagamento}"
+
                 if codigoImovel in resultado:
-                    resultado[codigoImovel] += valorPagamentoFormatado
+                    resultado[codigoImovel] += valorPagamento
                 else:
-                    resultado[codigoImovel] = valorPagamentoFormatado
+                    resultado[codigoImovel] = valorPagamento
             return jsonify(resultado)
 
 
@@ -68,18 +69,19 @@ try:
         # ENDPOINT para calcular o total de vendas por mês/ano
         @app.route('/totalVendasPorMesAno', methods=['GET'])
         def totalVendasPorMesAno():
-
             resultado = defaultdict(float)
+
             for venda in vendas:
                 dataPagamento = venda['DataPagamento']
                 valorPagamento = venda['ValorPagamento']
-                dataString = str(dataPagamento)
 
-                if dataPagamento in resultado:
-                    resultado[dataString] += f"R$ {valorPagamento}"
-                else:
-                    resultado[dataString] = f"R$ {valorPagamento}"
+                # Converte o valor de 'decimal.Decimal' para 'float'
+                valorPagamento_float = float(valorPagamento)
 
+                # Formata o DataPagamento para "mes/ano"
+                dataString = dataPagamento.strftime("%m/%Y")
+
+                resultado[dataString] += valorPagamento_float
             return jsonify(resultado)
 
         # ENDPOINT para calcular o valor percentual por tipo de imóvel
