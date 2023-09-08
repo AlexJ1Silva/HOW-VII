@@ -64,25 +64,25 @@ try:
                     resultado[codigoImovel] = valorPagamento
             return jsonify(resultado)
 
-
-
-        # ENDPOINT para calcular o total de vendas por mês/ano
-        @app.route('/totalVendasPorMesAno', methods=['GET'])
-        def totalVendasPorMesAno():
+        def totalVendasPorMesAno(vendas):
             resultado = defaultdict(float)
 
             for venda in vendas:
                 dataPagamento = venda['DataPagamento']
                 valorPagamento = venda['ValorPagamento']
 
-                # Converte o valor de 'decimal.Decimal' para 'float'
-                valorPagamento_float = float(valorPagamento)
+
+                # Converte o valor de 'Decimal, pois na tablea foi declado como decimal' para 'float'
+                valorPagamentoFloat = float(valorPagamento)
+
 
                 # Formata o DataPagamento para "mes/ano"
                 dataString = dataPagamento.strftime("%m/%Y")
 
-                resultado[dataString] += valorPagamento_float
-            return jsonify(resultado)
+
+                resultado[dataString] += valorPagamentoFloat
+
+            return resultado
 
         # ENDPOINT para calcular o valor percentual por tipo de imóvel
         @app.route('/valorPercentualPorTipoImovel', methods=['GET'])
@@ -101,6 +101,18 @@ try:
                 resultado[tipo] = f"Venda: {(valor / totalVendas) * 100:.2f}%"
             return jsonify(resultado)
 
+        # Função para formatar um valor como moeda
+        def formatarMoeda(valor):
+            return "${:.2f}".format(valor)
+
+        # ENDPOINT para calcular o total de vendas por mês/ano
+        @app.route('/totalVendasPorMesAnoEndpoint', methods=['GET'])
+        def totalVendasPorMesAnoEndpoint():
+
+            resultado = totalVendasPorMesAno(vendas)
+            resultadoFormatado = {chave: formatarMoeda(valor) for chave, valor in resultado.items()}
+
+            return jsonify(resultadoFormatado)
 
 except Error as e:
     print("Erro ao tentar se conectar com MySQL", e)
