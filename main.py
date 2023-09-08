@@ -43,17 +43,7 @@ try:
             #print(row)
 
     conexao.close()
-olp
-Golpista Safado
 
-Golpista Safadoe eles verem que a sua filha
-
-Golpista Safadoestava com um feitio terrvel...
-
-Golpi
-
-
-Gol
 except Error as e:
     print("Erro ao tentar se conectar com MySQL", e)
 
