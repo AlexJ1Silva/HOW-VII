@@ -71,17 +71,13 @@ try:
                 dataPagamento = venda['DataPagamento']
                 valorPagamento = venda['ValorPagamento']
 
-
                 # Converte o valor de 'Decimal, pois na tablea foi declado como decimal' para 'float'
                 valorPagamentoFloat = float(valorPagamento)
-
 
                 # Formata o DataPagamento para "mes/ano"
                 dataString = dataPagamento.strftime("%m/%Y")
 
-
                 resultado[dataString] += valorPagamentoFloat
-
             return resultado
 
         # ENDPOINT para calcular o valor percentual por tipo de imóvel
@@ -103,7 +99,8 @@ try:
 
         # Função para formatar um valor como moeda
         def formatarMoeda(valor):
-            return "Total R$ {:.2f}".format(valor)
+            return "Total R$ {:,.2f}".format(valor)
+
 
         # ENDPOINT para calcular o total de vendas por mês/ano
         @app.route('/totalVendasPorMesAnoEndpoint', methods=['GET'])
