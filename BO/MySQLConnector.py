@@ -49,9 +49,9 @@ try:
         cursor.execute(consulta)
         vendas = cursor.fetchall()
 
-        # ENDPOINT para calcular a soma de pagamentos por imóvel
-        @app.route('/somaPagamentosPorImovel', methods=['GET'])
-        def somaPagamentosPorImovel():
+
+
+        def somaPagamentosPorImovel(vendas):
             resultado = {}
 
             for venda in vendas:
@@ -62,7 +62,7 @@ try:
                     resultado[codigoImovel] += valorPagamento
                 else:
                     resultado[codigoImovel] = valorPagamento
-            return jsonify(resultado)
+            return resultado
 
         def totalVendasPorMesAno(vendas):
             resultado = defaultdict(float)
@@ -103,13 +103,22 @@ try:
 
         # Função para formatar um valor como moeda
         def formatarMoeda(valor):
-            return "${:.2f}".format(valor)
+            return "Total R$ {:.2f}".format(valor)
 
         # ENDPOINT para calcular o total de vendas por mês/ano
         @app.route('/totalVendasPorMesAnoEndpoint', methods=['GET'])
         def totalVendasPorMesAnoEndpoint():
 
             resultado = totalVendasPorMesAno(vendas)
+            resultadoFormatado = {chave: formatarMoeda(valor) for chave, valor in resultado.items()}
+
+            return jsonify(resultadoFormatado)
+
+
+        # ENDPOINT para calcular a soma de pagamentos por imóvel
+        @app.route('/somaPagamentosPorImovelEndpoint', methods=['GET'])
+        def somaPagamentosPorImovelEndpoint():
+            resultado = somaPagamentosPorImovel(vendas)
             resultadoFormatado = {chave: formatarMoeda(valor) for chave, valor in resultado.items()}
 
             return jsonify(resultadoFormatado)
