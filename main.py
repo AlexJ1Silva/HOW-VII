@@ -12,7 +12,7 @@ try:
                     )
     if conexao.is_connected():
         db_Info = conexao.get_server_info()
-        print("Connected to MySQL Server version ", db_Info)
+        print("Conectado com MySQL Server versão ", db_Info )
         consulta = """
                             SELECT
                                     p.VendaID,
