@@ -1,7 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 from flask import Flask, jsonify
-
+from collections import defaultdict
 app = Flask(__name__)
 
 try:
@@ -56,25 +56,32 @@ try:
             for venda in vendas:
                 codigoImovel = venda['CodigoImovel']
                 valorPagamento = venda['ValorPagamento']
+                valorPagamentoFormatado = f"R$ {valorPagamento}"
                 if codigoImovel in resultado:
-                    resultado[codigoImovel] += valorPagamento
+                    resultado[codigoImovel] += valorPagamentoFormatado
                 else:
-                    resultado[codigoImovel] = valorPagamento
+                    resultado[codigoImovel] = valorPagamentoFormatado
             return jsonify(resultado)
-            print("somaPagamentosPorImovel: >>", somaPagamentosPorImovel())
+
+
+
         # ENDPOINT para calcular o total de vendas por mês/ano
         @app.route('/totalVendasPorMesAno', methods=['GET'])
         def totalVendasPorMesAno():
-            resultado = {}
+
+            resultado = defaultdict(float)
             for venda in vendas:
                 dataPagamento = venda['DataPagamento']
                 valorPagamento = venda['ValorPagamento']
+                dataString = str(dataPagamento)
+
                 if dataPagamento in resultado:
-                    resultado[dataPagamento] += valorPagamento
+                    resultado[dataString] += f"R$ {valorPagamento}"
                 else:
-                    resultado[dataPagamento] = valorPagamento
+                    resultado[dataString] = f"R$ {valorPagamento}"
+
             return jsonify(resultado)
-            print("totalVendasPorMesAno: >>", totalVendasPorMesAno())
+
         # ENDPOINT para calcular o valor percentual por tipo de imóvel
         @app.route('/valorPercentualPorTipoImovel', methods=['GET'])
         def valorPercentualPorTipoImovel():
@@ -83,14 +90,15 @@ try:
             for venda in vendas:
                 tipoImovel = venda['Tipo']
                 valorPagamento = venda['ValorPagamento']
+
                 if tipoImovel in resultado:
                     resultado[tipoImovel] += valorPagamento
                 else:
                     resultado[tipoImovel] = valorPagamento
             for tipo, valor in resultado.items():
-                resultado[tipo] = f"{(valor / totalVendas) * 100:.2f}%"
+                resultado[tipo] = f"Venda: {(valor / totalVendas) * 100:.2f}%"
             return jsonify(resultado)
-            print("valorPercentualPorTipoImovel: >>", valorPercentualPorTipoImovel())
+
 
 except Error as e:
     print("Erro ao tentar se conectar com MySQL", e)
