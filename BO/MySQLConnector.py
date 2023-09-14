@@ -1,17 +1,21 @@
-import mysql.connector
-from mysql.connector import Error
-from flask import Flask, jsonify
+#Bibliotecas utilizadas
+import mysql.connector #Para conexão com o mysql
+from mysql.connector import Error #Para mostrar os erros obtidos relacionados com o mysql connector.
+from flask import Flask, jsonify #Para criar o micro serviço e a aplicação com os endpoints e jsonify os results para a chamada get
 from collections import defaultdict
 app = Flask(__name__)
 
+# Try Catch
 try:
-    # Conectando ao banco de dados
+    # Conectando ao banco de dados por meio do mysql connector
     conexao = mysql.connector.connect(
         host='localhost',
         user='root',
         password='',
         database='howvii',
     )
+
+    # Condição que verifica a conexão com o banco de dados, e se estiver executa o bloco de codigo.
     if conexao.is_connected():
         consulta = """
             SELECT
@@ -35,7 +39,7 @@ try:
               '                Tipo')
         print(
             '---------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-
+        # For para dar um print no resultado pegando o valor de cada campo da query feita no BD e formatando com espaçamentos e limitando as strings
         for row in result:
             linha = row
             VendaID, DataPagamento, ValorPagamento, CodigoImovel, DescricaoImovel, Tipo = linha
@@ -43,14 +47,14 @@ try:
                 f'{VendaID:^9} {DataPagamento} {ValorPagamento:>13,.2f} {CodigoImovel:^19} {DescricaoImovel[:50]:^15} {Tipo:^13}')
             print(
                 '---------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-            # print(row)
+
 
         cursor = conexao.cursor(dictionary=True)  # Usar 'dictionary=True' para obter resultados como dicionários
         cursor.execute(consulta)
         vendas = cursor.fetchall()
 
 
-
+        # Metodo para calcular e retornar a soma dos pagamentos de cada imovel, recebe como parametro a lista das vendas
         def somaPagamentosPorImovel(vendas):
             resultado = {}
 
@@ -64,6 +68,7 @@ try:
                     resultado[codigoImovel] = valorPagamento
             return resultado
 
+        # Metodo para calcular e retornar o total de vendas por mês/ano, recebe como parametro a lista das vendas
         def totalVendasPorMesAno(vendas):
             resultado = defaultdict(float)
 
@@ -71,7 +76,7 @@ try:
                 dataPagamento = venda['DataPagamento']
                 valorPagamento = venda['ValorPagamento']
 
-                # Converte o valor de 'Decimal, pois na tablea foi declado como decimal' para 'float'
+                # Converte(cast) o valor de 'Decimal para 'float', pois na tablea foi declado como decimal'
                 valorPagamentoFloat = float(valorPagamento)
 
                 # Formata o DataPagamento para "mes/ano"
@@ -97,22 +102,24 @@ try:
                 resultado[tipo] = f"Venda: {(valor / totalVendas) * 100:.2f}%"
             return jsonify(resultado)
 
-        # Função para formatar um valor como moeda
+        # Função para formatar e retornar um valor como moeda concatenando a string Total R$ com o valor formatado
         def formatarMoeda(valor):
             return "Total R$ {:,.2f}".format(valor)
 
 
-        # ENDPOINT para calcular o total de vendas por mês/ano
+        # ENDPOINT para calcular o total de vendas por mês/ano chamando o metodo totalVendasPorMesAno
         @app.route('/totalVendasPorMesAnoEndpoint', methods=['GET'])
         def totalVendasPorMesAnoEndpoint():
 
             resultado = totalVendasPorMesAno(vendas)
+
+            #Resultado formatado chamando o metodo formatarMoeda
             resultadoFormatado = {chave: formatarMoeda(valor) for chave, valor in resultado.items()}
 
             return jsonify(resultadoFormatado)
 
 
-        # ENDPOINT para calcular a soma de pagamentos por imóvel
+        # ENDPOINT para calcular a soma de pagamentos por imóvel chamando o metodo somaPagamentosPorImovel.
         @app.route('/somaPagamentosPorImovelEndpoint', methods=['GET'])
         def somaPagamentosPorImovelEndpoint():
             resultado = somaPagamentosPorImovel(vendas)
